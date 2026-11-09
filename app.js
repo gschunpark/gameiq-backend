@@ -1,4 +1,5 @@
 import express from 'express';
+import cors from 'cors';
 import rateLimit from 'express-rate-limit';
 import { z } from 'zod';
 import { generateLevel, GenerationError } from './providers.js';
@@ -26,9 +27,14 @@ export function validateRequest(body) {
   return parsed.data;
 }
 
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim())
+  : ['http://localhost:5173'];
+
 export function createApp({ generate = generateLevel, rateLimitMax = 10 } = {}) {
   const app = express();
   app.disable('x-powered-by');
+  app.use(cors({ origin: allowedOrigins }));
   app.use('/api', (req, res, next) => { res.set('Cache-Control', 'no-store'); next(); });
   app.post('/api/generate-level', rateLimit({ windowMs: 60000, limit: rateLimitMax, standardHeaders: 'draft-8', legacyHeaders: false,
     message: { error: { code: 'RATE_LIMIT', message: 'Too many requests. Please wait a minute before generating another level.' } } }),
