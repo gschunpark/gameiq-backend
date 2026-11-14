@@ -5,7 +5,8 @@ const text = z.string().trim().min(1).max(1200);
 const id = z.string().regex(/^[A-Za-z0-9_-]{1,80}$/);
 const point = z.tuple([z.number().min(15).max(485), z.number().min(15).max(530)]);
 const player = z.object({ id, label: z.string().min(1).max(5), side: z.enum(['offense', 'defense']), points: z.array(point).min(2).max(8) }).strict();
-const actions = ['hold', 'retreat', 'runLeft', 'runRight', 'runMiddle'];
+const scrambles = ['scrambleLeft', 'scrambleMiddle', 'scrambleRight'];
+const actions = ['hold', 'retreat', 'runLeft', 'runRight', 'runMiddle', ...scrambles];
 const play = z.object({
   id, title: text, situation: text, description: text, question: text,
   formation: z.enum(['shotgun', 'under']), correct: z.number().int().min(0).max(3),
@@ -18,7 +19,8 @@ const play = z.object({
   const issue = message => ctx.addIssue({ code: 'custom', message });
   if (ids.size !== 22 || expected.some(v => !p.players.some(w => w.id === v.id && w.side === v.side))) issue('Use all 22 template player IDs and sides exactly once.');
   if (p.highlights.some(v => !ids.has(v))) issue('Highlights must reference players.');
-  if (!ids.has(p.target) && p.target !== 'runLeft') issue('Target must be a player or runLeft.');
+  if (!ids.has(p.target) && p.target !== 'runLeft' && !scrambles.includes(p.target)) issue('Target must be a player, runLeft, or a scramble action.');
+  if (p.run && p.answers.some(a => scrambles.includes(a[1]))) issue('Scramble actions are only for run=false (QB keeps the ball) plays.');
   if (p.answers.some(a => !ids.has(a[1]) && !actions.includes(a[1]))) issue('Answer actions must reference players or supported actions.');
   if (p.answers[p.correct]?.[1] !== p.target) issue('Correct answer action must equal target.');
   if (p.run && p.target !== 'runLeft') issue('The running animation requires runLeft as target.');
