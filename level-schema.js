@@ -27,5 +27,8 @@ const play = z.object({
   if (!p.run && p.target === 'runLeft') issue('runLeft requires run=true.');
 });
 
-export const generatedContentSchema = z.object({ title: text, plays: z.array(play).length(5), playHints: z.array(text).length(5) }).strict()
-  .superRefine((v, ctx) => { if (new Set(v.plays.map(p => p.id)).size !== 5) ctx.addIssue({ code: 'custom', message: 'Play IDs must be unique.' }); });
+// Plays per generated level (1-5). Fewer plays = smaller AI requests, e.g. LEVEL_PLAYS=1 fits Groq's free tier.
+export const PLAY_COUNT = Math.min(5, Math.max(1, Number.parseInt(process.env.LEVEL_PLAYS, 10) || 5));
+
+export const generatedContentSchema = z.object({ title: text, plays: z.array(play).length(PLAY_COUNT), playHints: z.array(text).length(PLAY_COUNT) }).strict()
+  .superRefine((v, ctx) => { if (new Set(v.plays.map(p => p.id)).size !== PLAY_COUNT) ctx.addIssue({ code: 'custom', message: 'Play IDs must be unique.' }); });
