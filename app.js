@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import rateLimit from 'express-rate-limit';
 import { z } from 'zod';
-import { generateLevel, GenerationError } from './providers.js';
+import { generateLevels, GenerationError } from './providers.js';
 
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 const requestSchema = z.object({
@@ -31,7 +31,7 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim())
   : ['http://localhost:5173'];
 
-export function createApp({ generate = generateLevel, rateLimitMax = 10 } = {}) {
+export function createApp({ generate = generateLevels, rateLimitMax = 10 } = {}) {
   const app = express();
   app.disable('x-powered-by');
   app.use(cors({ origin: allowedOrigins }));

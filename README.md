@@ -15,4 +15,4 @@ The frontend must proxy `/api` requests to this service or host both on the same
 
 ## API
 
-`POST /api/generate-level` accepts a JSON body with a required `question` (1–2000 characters) and an optional `image` containing raw base64 JPEG/PNG data plus its matching `mimeType`. Decoded images are limited to 5 MiB. It returns `{ level, predictions }` or `{ error: { code, message } }`. Images and provider secrets are not logged or persisted.
+`POST /api/generate-level` accepts a JSON body with a required `question` (1–2000 characters) and an optional `image` containing raw base64 JPEG/PNG data plus its matching `mimeType`. Decoded images are limited to 5 MiB. It returns `{ levels, level, predictions }`, where `levels` holds `LEVEL_COUNT` levels (default 3, increasing in difficulty) and `level` is the first one, kept for older clients. If some levels fail, the ones that succeeded are still returned. Errors return `{ error: { code, message } }`. Images and provider secrets are not logged or persisted.
